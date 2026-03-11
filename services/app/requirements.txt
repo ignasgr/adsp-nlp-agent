@@ -1,0 +1,8 @@
+chainlit
+chromadb==1.5.0
+fastapi
+openai
+openai-agents
+pydantic
+sentence-transformers
+uvicorn

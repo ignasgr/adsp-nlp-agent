@@ -1,0 +1,22 @@
+services:
+  app:
+    build:
+      context: ./services/app
+    env_file:
+      - .env
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./services/app/src:/workspace/src
+      - ./chroma_data:/workspace/chroma
+
+  ingest:
+    build:
+      context: ./services/ingest
+    env_file:
+      - .env
+    volumes:
+      - ./data:/workspace/data
+      - ./chroma_data:/workspace/chroma
+      - ./services/ingest/src:/workspace/src
+    restart: "no"
