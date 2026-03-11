@@ -16,5 +16,5 @@ def create_github_mcp_server() -> MCPServerStreamableHttp:
                 "X-MCP-Tools": "get_file_contents",
             },
         },
-        cache_tools_list=False,
+        cache_tools_list=True,
     )

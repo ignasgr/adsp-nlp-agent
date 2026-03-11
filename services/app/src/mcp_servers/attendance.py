@@ -22,7 +22,7 @@ def create_attendance_mcp_server() -> MCPServerStdio:
                 "src/mcp_servers/attendance.py",
             ],
         },
-        cache_tools_list=False,
+        cache_tools_list=True,
     )
 
 

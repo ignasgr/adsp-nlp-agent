@@ -38,7 +38,7 @@ def create_chroma_mcp_server() -> MCPServerStdio:
                 "src/mcp_servers/chroma.py",
             ],
         },
-        cache_tools_list=False,
+        cache_tools_list=True,
     )
 
 
