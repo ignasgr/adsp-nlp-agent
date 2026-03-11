@@ -1,12 +1,14 @@
 import asyncio
 import os
+from pathlib import Path
 
 import chainlit as cl
 from agents import Agent, Runner, SQLiteSession
-from mcp_servers import create_github_mcp_server
+from mcp_servers import create_chroma_mcp_server, create_github_mcp_server
 from openai.types.responses import ResponseTextDeltaEvent
 
 MODEL_NAME = os.getenv("OPENAI_CHAT_MODEL")
+COURSE_TA_INSTRUCTIONS = Path(__file__).with_name("instructions.md").read_text()
 
 
 def _item_attr(item, attr_name: str):
@@ -29,19 +31,22 @@ async def start_chat() -> None:
     # Create and connect the GitHub MCP server once per Chainlit chat session.
     github_mcp_server = create_github_mcp_server()
     await github_mcp_server.connect()
+    chroma_mcp_server = create_chroma_mcp_server()
+    await chroma_mcp_server.connect()
 
     # The agent gets the MCP server as a tool source. The conversation state is
     # stored separately in SQLiteSession and reused on each user turn.
     agent = Agent(
         name="Assistant",
-        instructions="You are a helpful assistant.",
+        instructions=COURSE_TA_INSTRUCTIONS,
         model=MODEL_NAME,
-        mcp_servers=[github_mcp_server],
+        mcp_servers=[github_mcp_server, chroma_mcp_server],
     )
 
     cl.user_session.set("agent", agent)
     cl.user_session.set("agent_session", SQLiteSession("chainlit_session"))
     cl.user_session.set("github_mcp_server", github_mcp_server)
+    cl.user_session.set("chroma_mcp_server", chroma_mcp_server)
 
 
 @cl.on_chat_end
@@ -50,6 +55,9 @@ async def end_chat() -> None:
     github_mcp_server = cl.user_session.get("github_mcp_server")
     if github_mcp_server is not None:
         await github_mcp_server.cleanup()
+    chroma_mcp_server = cl.user_session.get("chroma_mcp_server")
+    if chroma_mcp_server is not None:
+        await chroma_mcp_server.cleanup()
 
 
 @cl.on_message

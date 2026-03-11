@@ -1,6 +1,7 @@
 import os
+import sys
 
-from agents.mcp import MCPServerStreamableHttp
+from agents.mcp import MCPServerStdio, MCPServerStreamableHttp
 
 
 def create_github_mcp_server() -> MCPServerStreamableHttp:
@@ -12,6 +13,19 @@ def create_github_mcp_server() -> MCPServerStreamableHttp:
         params={
             "url": github_mcp_url,
             "headers": {"Authorization": f"Bearer {github_pat}"},
+        },
+        cache_tools_list=True,
+    )
+
+
+def create_chroma_mcp_server() -> MCPServerStdio:
+    return MCPServerStdio(
+        name="Chroma MCP",
+        params={
+            "command": sys.executable,
+            "args": [
+                "src/chroma_mcp_server.py",
+            ],
         },
         cache_tools_list=True,
     )
