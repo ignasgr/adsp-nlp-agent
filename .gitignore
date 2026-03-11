@@ -10,3 +10,4 @@ data/
 attendance_data/
 .chainlit/*
 !.chainlit/config.toml
+preference_data/

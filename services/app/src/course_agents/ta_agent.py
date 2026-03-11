@@ -12,6 +12,7 @@ def create_ta_agent(
     github_mcp_server,
     chroma_mcp_server,
     attendance_mcp_server,
+    preferences_mcp_server,
     user_context: str = "",
 ) -> Agent:
 
@@ -30,6 +31,7 @@ def create_ta_agent(
         name="TA Agent",
         instructions=instructions,
         model=model_name,
+        mcp_servers=[preferences_mcp_server],
         tools=[
             attendance_agent.as_tool(
                 tool_name="attendance_specialist",

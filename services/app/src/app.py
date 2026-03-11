@@ -11,6 +11,7 @@ from mcp_servers import (
     create_attendance_mcp_server,
     create_chroma_mcp_server,
     create_github_mcp_server,
+    create_preferences_mcp_server,
 )
 from openai.types.responses import ResponseTextDeltaEvent
 
@@ -96,6 +97,8 @@ async def start_chat() -> None:
     await chroma_mcp_server.connect()
     attendance_mcp_server = create_attendance_mcp_server()
     await attendance_mcp_server.connect()
+    preferences_mcp_server = create_preferences_mcp_server()
+    await preferences_mcp_server.connect()
 
     # The agent gets the MCP server as a tool source. The conversation state is
     # stored separately in SQLiteSession and reused on each user turn.
@@ -104,6 +107,7 @@ async def start_chat() -> None:
         github_mcp_server=github_mcp_server,
         chroma_mcp_server=chroma_mcp_server,
         attendance_mcp_server=attendance_mcp_server,
+        preferences_mcp_server=preferences_mcp_server,
         user_context=(
             f"The authenticated user identifier is `{user_identifier}` and the "
             f"display name is `{user_name}`. Use this as the default student "
@@ -119,6 +123,7 @@ async def start_chat() -> None:
     cl.user_session.set("github_mcp_server", github_mcp_server)
     cl.user_session.set("chroma_mcp_server", chroma_mcp_server)
     cl.user_session.set("attendance_mcp_server", attendance_mcp_server)
+    cl.user_session.set("preferences_mcp_server", preferences_mcp_server)
 
 
 @cl.on_chat_end
@@ -133,6 +138,9 @@ async def end_chat() -> None:
     attendance_mcp_server = cl.user_session.get("attendance_mcp_server")
     if attendance_mcp_server is not None:
         await attendance_mcp_server.cleanup()
+    preferences_mcp_server = cl.user_session.get("preferences_mcp_server")
+    if preferences_mcp_server is not None:
+        await preferences_mcp_server.cleanup()
 
 
 @cl.on_message
