@@ -1,13 +1,29 @@
 import os
+import sys
 from typing import Any
 
 import chromadb
+from agents.mcp import MCPServerStdio
 from fastmcp import FastMCP
+
 
 CHROMA_DATA_DIR = os.getenv("CHROMA_DATA_DIR", "/workspace/chroma")
 
 mcp = FastMCP("Local Chroma MCP")
 client = chromadb.PersistentClient(path=CHROMA_DATA_DIR)
+
+
+def create_chroma_mcp_server() -> MCPServerStdio:
+    return MCPServerStdio(
+        name="Chroma MCP",
+        params={
+            "command": sys.executable,
+            "args": [
+                "src/mcp_servers/chroma.py",
+            ],
+        },
+        cache_tools_list=False,
+    )
 
 
 @mcp.tool

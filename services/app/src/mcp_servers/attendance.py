@@ -1,14 +1,30 @@
 import os
 import sqlite3
+import sys
 from contextlib import closing
 from datetime import datetime
 
+from agents.mcp import MCPServerStdio
 from fastmcp import FastMCP
+
 
 ATTENDANCE_DIR = os.getenv("ATTENDANCE_DATA_DIR", "/workspace/attendance")
 ATTENDANCE_DB_PATH = os.path.join(ATTENDANCE_DIR, "attendance.sqlite3")
 
 mcp = FastMCP("Attendance MCP")
+
+
+def create_attendance_mcp_server() -> MCPServerStdio:
+    return MCPServerStdio(
+        name="Attendance MCP",
+        params={
+            "command": sys.executable,
+            "args": [
+                "src/mcp_servers/attendance.py",
+            ],
+        },
+        cache_tools_list=False,
+    )
 
 
 def _get_connection() -> sqlite3.Connection:
