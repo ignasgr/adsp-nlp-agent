@@ -29,7 +29,6 @@ def _init_attendance_db() -> None:
                 username TEXT NOT NULL,
                 student_name TEXT,
                 class_date TEXT NOT NULL,
-                status TEXT NOT NULL,
                 created_at TEXT NOT NULL
             )
             """
@@ -70,18 +69,18 @@ def get_student_record(ctx: RunContextWrapper[Any]) -> dict:
     username = ctx.context.username
 
     with closing(_get_attendance_connection()) as connection:
-        approved_absence_count = connection.execute(
+        absence_count = connection.execute(
             """
             SELECT COUNT(*)
             FROM absences
-            WHERE username = ? AND status = 'approved'
+            WHERE username = ?
             """,
             (username,),
         ).fetchone()[0]
 
         requests = connection.execute(
             """
-            SELECT username, student_name, class_date, status, created_at
+            SELECT username, student_name, class_date, created_at
             FROM absences
             WHERE username = ?
             ORDER BY class_date DESC, id DESC
@@ -92,9 +91,8 @@ def get_student_record(ctx: RunContextWrapper[Any]) -> dict:
     return {
         "username": username,
         "student_name": ctx.context.name,
-        "approved_absence_count": approved_absence_count,
-        "request_count": len(requests),
-        "requests": [dict(row) for row in requests],
+        "absence_count": absence_count,
+        "absences": [dict(row) for row in requests],
     }
 
 
@@ -109,7 +107,7 @@ def request_absence(ctx: RunContextWrapper[Any], class_date: str) -> dict:
     with closing(_get_attendance_connection()) as connection:
         existing = connection.execute(
             """
-            SELECT id, username, student_name, class_date, status, created_at
+            SELECT id, username, student_name, class_date, created_at
             FROM absences
             WHERE username = ? AND class_date = ?
             ORDER BY id DESC
@@ -122,21 +120,29 @@ def request_absence(ctx: RunContextWrapper[Any], class_date: str) -> dict:
                 "username": existing["username"],
                 "student_name": existing["student_name"],
                 "class_date": existing["class_date"],
-                "status": existing["status"],
                 "created_at": existing["created_at"],
-                "message": "An absence request already exists for this student and class date.",
+                "message": "An absence is already recorded for this student and class date.",
             }
 
-        approved_absence_count = connection.execute(
+        absence_count = connection.execute(
             """
             SELECT COUNT(*)
             FROM absences
-            WHERE username = ? AND status = 'approved'
+            WHERE username = ?
             """,
             (username,),
         ).fetchone()[0]
 
-        status = "approved" if approved_absence_count < 2 else "denied"
+        if absence_count >= 2:
+            return {
+                "username": username,
+                "student_name": student_name,
+                "class_date": class_date,
+                "message": (
+                    "Absence denied automatically because the student already has 2 absences."
+                ),
+            }
+
         created_at = datetime.utcnow().isoformat(timespec="seconds") + "Z"
 
         connection.execute(
@@ -145,12 +151,11 @@ def request_absence(ctx: RunContextWrapper[Any], class_date: str) -> dict:
                 username,
                 student_name,
                 class_date,
-                status,
                 created_at
             )
-            VALUES (?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?)
             """,
-            (username, student_name, class_date, status, created_at),
+            (username, student_name, class_date, created_at),
         )
         connection.commit()
 
@@ -158,13 +163,7 @@ def request_absence(ctx: RunContextWrapper[Any], class_date: str) -> dict:
         "username": username,
         "student_name": student_name,
         "class_date": class_date,
-        "status": status,
-        "approved_absence_count_before_request": approved_absence_count,
-        "message": (
-            "Absence approved automatically."
-            if status == "approved"
-            else "Absence denied automatically because the student already has 2 approved absences."
-        ),
+        "message": "Absence approved automatically.",
     }
 
 
@@ -218,4 +217,3 @@ def update_response_style(
         "response_style": response_style,
         "updated_at": updated_at,
     }
-
