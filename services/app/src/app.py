@@ -1,5 +1,8 @@
 import asyncio
+import json
 import os
+import re
+from functools import lru_cache
 
 import chainlit as cl
 from agents import Runner, SQLiteSession
@@ -12,6 +15,17 @@ from mcp_servers import (
 from openai.types.responses import ResponseTextDeltaEvent
 
 MODEL_NAME = os.getenv("OPENAI_CHAT_MODEL")
+
+
+def _session_key_for_user(identifier: str) -> str:
+    safe_identifier = re.sub(r"[^a-zA-Z0-9]+", "_", identifier).strip("_").lower()
+    return f"chainlit_{safe_identifier or 'user'}"
+
+
+@lru_cache(maxsize=1)
+def _load_auth_users() -> dict[str, dict]:
+    configured_users = json.loads(os.environ["CHAINLIT_AUTH_USERS_JSON"])
+    return {user["username"]: user for user in configured_users}
 
 
 def _item_attr(item, attr_name: str):
@@ -27,6 +41,22 @@ def _item_attr(item, attr_name: str):
     if isinstance(raw_item, dict):
         return raw_item.get(attr_name)
     return getattr(raw_item, attr_name, None)
+
+
+@cl.password_auth_callback
+def password_auth_callback(username: str, password: str):
+    user = _load_auth_users().get(username)
+    if user is None or user["password"] != password:
+        return None
+
+    return cl.User(
+        identifier=username,
+        metadata={
+            "name": user.get("name", username),
+            "username": username,
+            "provider": "credentials",
+        },
+    )
 
 
 @cl.set_starters
@@ -49,6 +79,16 @@ async def set_starters():
 
 @cl.on_chat_start
 async def start_chat() -> None:
+    current_user = cl.user_session.get("user")
+    user_identifier = (
+        current_user.identifier if current_user is not None else "anonymous"
+    )
+    user_name = (
+        current_user.metadata.get("name", user_identifier)
+        if current_user is not None
+        else "Anonymous User"
+    )
+
     # Create and connect the GitHub MCP server once per Chainlit chat session.
     github_mcp_server = create_github_mcp_server()
     await github_mcp_server.connect()
@@ -64,10 +104,18 @@ async def start_chat() -> None:
         github_mcp_server=github_mcp_server,
         chroma_mcp_server=chroma_mcp_server,
         attendance_mcp_server=attendance_mcp_server,
+        user_context=(
+            f"The authenticated user identifier is `{user_identifier}` and the "
+            f"display name is `{user_name}`. Use this as the default student "
+            "identity for user-specific tasks unless the user explicitly says "
+            "they are asking on behalf of someone else."
+        ),
     )
 
     cl.user_session.set("agent", agent)
-    cl.user_session.set("agent_session", SQLiteSession("chainlit_session"))
+    cl.user_session.set(
+        "agent_session", SQLiteSession(_session_key_for_user(user_identifier))
+    )
     cl.user_session.set("github_mcp_server", github_mcp_server)
     cl.user_session.set("chroma_mcp_server", chroma_mcp_server)
     cl.user_session.set("attendance_mcp_server", attendance_mcp_server)

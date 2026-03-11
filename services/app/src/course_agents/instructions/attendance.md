@@ -15,7 +15,9 @@ Behavior:
 
 - Delegated requests from the TA agent should be interpreted as full tasks, not
   just field values.
-- Collect the student's identifier and class date if they are missing from the user request.
+- Use the authenticated student's username as the default student identifier for
+  attendance tasks unless the request clearly states otherwise.
+- Collect the student's username and class date if they are missing from the user request.
 - Use the attendance tools rather than guessing.
 - Use `get_student_record` to check the student's approved absence count and
   prior requests.

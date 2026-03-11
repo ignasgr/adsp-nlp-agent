@@ -12,8 +12,15 @@ def create_ta_agent(
     github_mcp_server,
     chroma_mcp_server,
     attendance_mcp_server,
+    user_context: str = "",
 ) -> Agent:
-    instructions = Path(__file__).with_name("instructions").joinpath("ta.md").read_text()
+
+    instructions = (
+        Path(__file__).with_name("instructions").joinpath("ta.md").read_text()
+    )
+
+    if user_context:
+        instructions = f"{instructions}\n\nAuthenticated user context:\n{user_context}"
 
     attendance_agent = create_attendance_agent(model_name, attendance_mcp_server)
     lecture_agent = create_lecture_agent(model_name, chroma_mcp_server)
