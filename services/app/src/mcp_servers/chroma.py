@@ -13,6 +13,23 @@ mcp = FastMCP("Local Chroma MCP")
 client = chromadb.PersistentClient(path=CHROMA_DATA_DIR)
 
 
+def _format_reference(metadata: dict[str, Any] | None) -> str:
+    if not metadata:
+        return ""
+
+    source = metadata.get("source", "unknown source")
+    lecture_number = metadata.get("lecture_number")
+    page_number = metadata.get("page_number")
+
+    parts = [str(source)]
+    if lecture_number is not None:
+        parts.append(f"lecture {lecture_number}")
+    if page_number is not None:
+        parts.append(f"slide {page_number}")
+
+    return ", ".join(parts)
+
+
 def create_chroma_mcp_server() -> MCPServerStdio:
     return MCPServerStdio(
         name="Chroma MCP",
@@ -129,6 +146,7 @@ def chroma_query_documents(
                 "document": document,
                 "metadata": metadata,
                 "distance": distance,
+                "reference": _format_reference(metadata),
             }
         )
 
@@ -186,6 +204,7 @@ def chroma_get_slide_page(
                 "document": document,
                 "metadata": metadata,
                 "distance": distance,
+                "reference": _format_reference(metadata),
             }
         )
 
