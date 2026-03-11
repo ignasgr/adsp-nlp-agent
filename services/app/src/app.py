@@ -2,20 +2,31 @@ import asyncio
 import json
 import os
 import re
+from dataclasses import dataclass
 from functools import lru_cache
 
 import chainlit as cl
 from agents import Runner, SQLiteSession
 from course_agents import create_ta_agent
 from mcp_servers import (
-    create_attendance_mcp_server,
     create_chroma_mcp_server,
     create_github_mcp_server,
-    create_preferences_mcp_server,
 )
 from openai.types.responses import ResponseTextDeltaEvent
+from tools import (
+    get_response_style,
+    get_student_record,
+    request_absence,
+    update_response_style,
+)
 
 MODEL_NAME = os.getenv("OPENAI_CHAT_MODEL")
+
+
+@dataclass
+class AppContext:
+    username: str
+    name: str
 
 
 def _session_key_for_user(identifier: str) -> str:
@@ -65,7 +76,7 @@ async def set_starters():
     return [
         cl.Starter(
             label="Request class absence",
-            message="I need to request an absence for the next class. Please help me submit it.",
+            message="I need to request a class absence. Please help me submit it.",
         ),
         cl.Starter(
             label="Ask about lecture slides",
@@ -93,12 +104,11 @@ async def start_chat() -> None:
     # Create and connect the GitHub MCP server once per Chainlit chat session.
     github_mcp_server = create_github_mcp_server()
     await github_mcp_server.connect()
+
     chroma_mcp_server = create_chroma_mcp_server()
     await chroma_mcp_server.connect()
-    attendance_mcp_server = create_attendance_mcp_server()
-    await attendance_mcp_server.connect()
-    preferences_mcp_server = create_preferences_mcp_server()
-    await preferences_mcp_server.connect()
+
+    app_context = AppContext(username=user_identifier, name=user_name)
 
     # The agent gets the MCP server as a tool source. The conversation state is
     # stored separately in SQLiteSession and reused on each user turn.
@@ -106,24 +116,17 @@ async def start_chat() -> None:
         model_name=MODEL_NAME,
         github_mcp_server=github_mcp_server,
         chroma_mcp_server=chroma_mcp_server,
-        attendance_mcp_server=attendance_mcp_server,
-        preferences_mcp_server=preferences_mcp_server,
-        user_context=(
-            f"The authenticated user identifier is `{user_identifier}` and the "
-            f"display name is `{user_name}`. Use this as the default student "
-            "identity for user-specific tasks unless the user explicitly says "
-            "they are asking on behalf of someone else."
-        ),
+        attendance_tools=[get_student_record, request_absence],
+        preference_tools=[get_response_style, update_response_style],
     )
 
     cl.user_session.set("agent", agent)
+    cl.user_session.set("app_context", app_context)
     cl.user_session.set(
         "agent_session", SQLiteSession(_session_key_for_user(user_identifier))
     )
     cl.user_session.set("github_mcp_server", github_mcp_server)
     cl.user_session.set("chroma_mcp_server", chroma_mcp_server)
-    cl.user_session.set("attendance_mcp_server", attendance_mcp_server)
-    cl.user_session.set("preferences_mcp_server", preferences_mcp_server)
 
 
 @cl.on_chat_end
@@ -135,12 +138,6 @@ async def end_chat() -> None:
     chroma_mcp_server = cl.user_session.get("chroma_mcp_server")
     if chroma_mcp_server is not None:
         await chroma_mcp_server.cleanup()
-    attendance_mcp_server = cl.user_session.get("attendance_mcp_server")
-    if attendance_mcp_server is not None:
-        await attendance_mcp_server.cleanup()
-    preferences_mcp_server = cl.user_session.get("preferences_mcp_server")
-    if preferences_mcp_server is not None:
-        await preferences_mcp_server.cleanup()
 
 
 @cl.on_message
@@ -148,6 +145,7 @@ async def on_message(message: cl.Message) -> None:
     # Recover the per-chat agent and session created during chat start.
     agent = cl.user_session.get("agent")
     session = cl.user_session.get("agent_session")
+    app_context = cl.user_session.get("app_context")
 
     # Stream the assistant response into a normal chat message so the main UI
     # stays chat-first, while tool calls are shown separately as steps.
@@ -158,6 +156,7 @@ async def on_message(message: cl.Message) -> None:
         agent,
         message.content,
         session=session,
+        context=app_context,
     )
 
     async for event in result.stream_events():

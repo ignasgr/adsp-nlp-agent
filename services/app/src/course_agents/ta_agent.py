@@ -11,19 +11,14 @@ def create_ta_agent(
     model_name: str,
     github_mcp_server,
     chroma_mcp_server,
-    attendance_mcp_server,
-    preferences_mcp_server,
-    user_context: str = "",
+    attendance_tools,
+    preference_tools,
 ) -> Agent:
-
     instructions = (
         Path(__file__).with_name("instructions").joinpath("ta.md").read_text()
     )
 
-    if user_context:
-        instructions = f"{instructions}\n\nAuthenticated user context:\n{user_context}"
-
-    attendance_agent = create_attendance_agent(model_name, attendance_mcp_server)
+    attendance_agent = create_attendance_agent(model_name, attendance_tools)
     lecture_agent = create_lecture_agent(model_name, chroma_mcp_server)
     notebook_agent = create_notebook_agent(model_name, github_mcp_server)
 
@@ -31,14 +26,14 @@ def create_ta_agent(
         name="TA Agent",
         instructions=instructions,
         model=model_name,
-        mcp_servers=[preferences_mcp_server],
         tools=[
+            *preference_tools,
             attendance_agent.as_tool(
                 tool_name="attendance_specialist",
                 tool_description=(
                     "Use for absence requests and attendance-record questions. "
                     "Pass a full task description including the student's goal, "
-                    "student identifier, class date, and any relevant context."
+                    "class date, and any relevant context."
                 ),
             ),
             lecture_agent.as_tool(

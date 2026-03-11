@@ -11,10 +11,12 @@ if str(SRC_DIR) not in sys.path:
     sys.path.insert(0, str(SRC_DIR))
 
 from course_agents import create_ta_agent  # noqa: E402
-from mcp_servers import (  # noqa: E402
-    create_attendance_mcp_server,
-    create_chroma_mcp_server,
-    create_github_mcp_server,
+from mcp_servers import create_chroma_mcp_server, create_github_mcp_server  # noqa: E402
+from tools import (  # noqa: E402
+    get_response_style,
+    get_student_record,
+    request_absence,
+    update_response_style,
 )
 
 
@@ -27,7 +29,8 @@ def main() -> None:
         model_name=model_name,
         github_mcp_server=create_github_mcp_server(),
         chroma_mcp_server=create_chroma_mcp_server(),
-        attendance_mcp_server=create_attendance_mcp_server(),
+        attendance_tools=[get_student_record, request_absence],
+        preference_tools=[get_response_style, update_response_style],
     )
 
     output_path = output_dir / "agent_graph"
