@@ -1,9 +1,9 @@
 import asyncio
 import os
-from pathlib import Path
 
 import chainlit as cl
-from agents import Agent, Runner, SQLiteSession
+from agents import Runner, SQLiteSession
+from course_agents import create_ta_agent
 from mcp_servers import (
     create_attendance_mcp_server,
     create_chroma_mcp_server,
@@ -12,7 +12,6 @@ from mcp_servers import (
 from openai.types.responses import ResponseTextDeltaEvent
 
 MODEL_NAME = os.getenv("OPENAI_CHAT_MODEL")
-COURSE_TA_INSTRUCTIONS = Path(__file__).with_name("instructions.md").read_text()
 
 
 def _item_attr(item, attr_name: str):
@@ -60,11 +59,11 @@ async def start_chat() -> None:
 
     # The agent gets the MCP server as a tool source. The conversation state is
     # stored separately in SQLiteSession and reused on each user turn.
-    agent = Agent(
-        name="Assistant",
-        instructions=COURSE_TA_INSTRUCTIONS,
-        model=MODEL_NAME,
-        mcp_servers=[github_mcp_server, chroma_mcp_server, attendance_mcp_server],
+    agent = create_ta_agent(
+        model_name=MODEL_NAME,
+        github_mcp_server=github_mcp_server,
+        chroma_mcp_server=chroma_mcp_server,
+        attendance_mcp_server=attendance_mcp_server,
     )
 
     cl.user_session.set("agent", agent)
