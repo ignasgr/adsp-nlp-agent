@@ -8,3 +8,5 @@ chroma_data/
 .DS_Store
 data/
 attendance_data/
+.chainlit/*
+!.chainlit/config.toml
