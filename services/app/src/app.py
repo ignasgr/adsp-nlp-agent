@@ -3,6 +3,7 @@ import json
 import os
 import re
 from dataclasses import dataclass
+from datetime import date
 from functools import lru_cache
 
 import chainlit as cl
@@ -27,6 +28,7 @@ MODEL_NAME = os.getenv("OPENAI_CHAT_MODEL")
 class AppContext:
     username: str
     name: str
+    today: str
 
 
 def _session_key_for_user(identifier: str) -> str:
@@ -108,7 +110,11 @@ async def start_chat() -> None:
     chroma_mcp_server = create_chroma_mcp_server()
     await chroma_mcp_server.connect()
 
-    app_context = AppContext(username=user_identifier, name=user_name)
+    app_context = AppContext(
+        username=user_identifier,
+        name=user_name,
+        today=date.today().isoformat(),
+    )
 
     # The agent gets the MCP server as a tool source. The conversation state is
     # stored separately in SQLiteSession and reused on each user turn.
