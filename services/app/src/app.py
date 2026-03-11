@@ -30,6 +30,24 @@ def _item_attr(item, attr_name: str):
     return getattr(raw_item, attr_name, None)
 
 
+@cl.set_starters
+async def set_starters():
+    return [
+        cl.Starter(
+            label="Request class absence",
+            message="I need to request an absence for the next class. Please help me submit it.",
+        ),
+        cl.Starter(
+            label="Ask about lecture slides",
+            message="Can you help me understand some lecture slides?",
+        ),
+        cl.Starter(
+            label="Ask about lecture code",
+            message="Can you help me understand some of the code in the notebooks?",
+        ),
+    ]
+
+
 @cl.on_chat_start
 async def start_chat() -> None:
     # Create and connect the GitHub MCP server once per Chainlit chat session.
