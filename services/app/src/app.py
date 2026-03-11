@@ -2,42 +2,40 @@ import asyncio
 import os
 
 import chainlit as cl
-from openai import AsyncOpenAI
+from agents import Agent, Runner, SQLiteSession
+from openai.types.responses import ResponseTextDeltaEvent
 
 MODEL_NAME = os.getenv("OPENAI_CHAT_MODEL")
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
-client = AsyncOpenAI(api_key=OPENAI_API_KEY)
+agent = Agent(
+    name="Assistant",
+    instructions="You are a helpful assistant.",
+    model=MODEL_NAME,
+)
 
 
 @cl.on_chat_start
-def start_chat():
-    cl.user_session.set(
-        "message_history",
-        [{"role": "system", "content": "You are a helpful assistant."}],
-    )
+async def start_chat() -> None:
+    cl.user_session.set("agent_session", SQLiteSession("chainlit_session"))
 
 
 @cl.on_message
 async def on_message(message: cl.Message) -> None:
-
-    message_history = cl.user_session.get("message_history")
-    message_history.append({"role": "user", "content": message.content})
-
+    session = cl.user_session.get("agent_session")
     msg = cl.Message(content="")
     await msg.send()
 
-    stream = await client.chat.completions.create(
-        model=MODEL_NAME,
-        messages=message_history,
-        stream=True,
+    result = Runner.run_streamed(
+        agent,
+        message.content,
+        session=session,
     )
 
-    async for part in stream:
-        if token := part.choices[0].delta.content or "":
-            await msg.stream_token(token)
+    async for event in result.stream_events():
+        if event.type == "raw_response_event" and isinstance(
+            event.data, ResponseTextDeltaEvent
+        ):
+            await msg.stream_token(event.data.delta)
             await asyncio.sleep(0.05)
-
-    message_history.append({"role": "assistant", "content": msg.content})
 
     await msg.update()
