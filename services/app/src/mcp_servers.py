@@ -32,3 +32,16 @@ def create_chroma_mcp_server() -> MCPServerStdio:
         },
         cache_tools_list=False,
     )
+
+
+def create_attendance_mcp_server() -> MCPServerStdio:
+    return MCPServerStdio(
+        name="Attendance MCP",
+        params={
+            "command": sys.executable,
+            "args": [
+                "src/attendance_mcp_server.py",
+            ],
+        },
+        cache_tools_list=False,
+    )

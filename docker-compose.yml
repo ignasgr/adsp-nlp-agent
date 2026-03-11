@@ -9,6 +9,7 @@ services:
     volumes:
       - ./.chainlit:/workspace/.chainlit
       - ./services/app/src:/workspace/src
+      - ./attendance_data:/workspace/attendance
       - ./chroma_data:/workspace/chroma
 
   ingest:
