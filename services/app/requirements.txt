@@ -3,7 +3,7 @@ chromadb==1.5.0
 fastmcp
 fastapi
 openai
-openai-agents
+openai-agents[viz]
 pydantic
 sentence-transformers
 uvicorn
