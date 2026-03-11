@@ -27,7 +27,7 @@ allow_origins = ["*"]
 unsafe_allow_html = false
 
 # Process and display mathematical expressions. This can clash with "$" characters in messages.
-latex = false
+latex = true
 
 # Enable rendering of user messages markdown
 user_message_markdown = true
@@ -95,7 +95,7 @@ reaction_on_message_received = false
 
 [UI]
 # Name of the assistant.
-name = "Assistant"
+name = "ADSP NLP TA"
 
 # default_theme = "dark"
 

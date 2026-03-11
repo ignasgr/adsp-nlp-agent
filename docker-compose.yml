@@ -8,6 +8,7 @@ services:
       - "8000:8000"
     volumes:
       - ./.chainlit:/workspace/.chainlit
+      - ./public:/workspace/public
       - ./services/app/src:/workspace/src
       - ./attendance_data:/workspace/attendance
       - ./chroma_data:/workspace/chroma
