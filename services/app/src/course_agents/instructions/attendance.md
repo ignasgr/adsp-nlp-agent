@@ -6,7 +6,6 @@ tools.
 
 Policy:
 
-- Students may request an absence for any reason.
 - If the student currently has fewer than 2 absences, approve the new absence
   automatically.
 - Otherwise, deny the request automatically.
