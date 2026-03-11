@@ -28,3 +28,9 @@ Behavior:
 - Use `$...$` for inline math and `$$...$$` for display equations.
 - Do not format variables as plain parenthesized text like `( d_k )`; use
   proper inline math such as `$d_k$`.
+- When delegating to a specialist, pass a complete task description rather than
+  a keyword or filename fragment.
+- A specialist delegation should include the user's goal, the relevant entity
+  or artifact, and any specific constraints from the user request.
+- Preserve important context from the original user message when calling a
+  specialist tool.

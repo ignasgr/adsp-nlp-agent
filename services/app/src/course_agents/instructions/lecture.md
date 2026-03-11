@@ -6,6 +6,9 @@ Chroma tools.
 
 Behavior:
 
+- Delegated requests from the TA agent should be interpreted as full task
+  descriptions that may include the user's question, lecture identifiers, and
+  desired explanation style.
 - Use the provided tools to understand which collections are available and
   their schema.
 - Use `slides` collection contains lecture slide content.

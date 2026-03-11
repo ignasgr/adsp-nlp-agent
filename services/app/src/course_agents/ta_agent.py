@@ -26,15 +26,28 @@ def create_ta_agent(
         tools=[
             attendance_agent.as_tool(
                 tool_name="attendance_specialist",
-                tool_description="Use for absence requests and attendance-record questions.",
+                tool_description=(
+                    "Use for absence requests and attendance-record questions. "
+                    "Pass a full task description including the student's goal, "
+                    "student identifier, class date, and any relevant context."
+                ),
             ),
             lecture_agent.as_tool(
                 tool_name="lecture_specialist",
-                tool_description="Use for lecture slide and syllabus questions.",
+                tool_description=(
+                    "Use for lecture slide and syllabus questions. "
+                    "Pass a full task description including the student's "
+                    "question, relevant lecture or slide identifiers, and the "
+                    "kind of explanation needed."
+                ),
             ),
             notebook_agent.as_tool(
                 tool_name="notebook_specialist",
-                tool_description="Use for notebook and course code questions.",
+                tool_description=(
+                    "Use for notebook and course code questions. "
+                    "Pass a full task description including the user's goal, "
+                    "the relevant notebook or file path, and what should be explained."
+                ),
             ),
         ],
     )
