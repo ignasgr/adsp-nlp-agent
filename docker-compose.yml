@@ -7,6 +7,7 @@ services:
     ports:
       - "8000:8000"
     volumes:
+      - ./.chainlit:/workspace/.chainlit
       - ./services/app/src:/workspace/src
       - ./chroma_data:/workspace/chroma
 

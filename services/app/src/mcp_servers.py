@@ -12,9 +12,12 @@ def create_github_mcp_server() -> MCPServerStreamableHttp:
         name="GitHub MCP",
         params={
             "url": github_mcp_url,
-            "headers": {"Authorization": f"Bearer {github_pat}"},
+            "headers": {
+                "Authorization": f"Bearer {github_pat}",
+                "X-MCP-Tools": "get_file_contents",
+            },
         },
-        cache_tools_list=True,
+        cache_tools_list=False,
     )
 
 
@@ -27,5 +30,5 @@ def create_chroma_mcp_server() -> MCPServerStdio:
                 "src/chroma_mcp_server.py",
             ],
         },
-        cache_tools_list=True,
+        cache_tools_list=False,
     )

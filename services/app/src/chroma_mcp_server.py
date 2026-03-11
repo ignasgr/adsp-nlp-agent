@@ -32,6 +32,39 @@ def chroma_get_collection_count() -> int:
 
 
 @mcp.tool
+def chroma_get_collection_schema(
+    collection_name: str,
+    sample_size: int = 5,
+) -> dict[str, Any]:
+    """Return the observed metadata schema for a collection.
+
+    Args:
+        collection_name: The exact Chroma collection name to inspect.
+        sample_size: Number of sample records to inspect for metadata keys.
+
+    Returns:
+        A summary containing the collection name, observed metadata keys, and
+        sample metadata records.
+
+    Use this when the agent needs to learn which metadata fields are available
+    before constructing filtered Chroma queries.
+    """
+    collection = client.get_collection(name=collection_name)
+    sample = collection.get(limit=sample_size, include=["metadatas"])
+    metadatas = sample.get("metadatas", []) or []
+
+    metadata_keys = sorted(
+        {key for metadata in metadatas if metadata for key in metadata.keys()}
+    )
+
+    return {
+        "collection_name": collection_name,
+        "metadata_keys": metadata_keys,
+        "sample_metadatas": metadatas,
+    }
+
+
+@mcp.tool
 def chroma_query_documents(
     collection_name: str,
     query_text: str,
@@ -59,6 +92,63 @@ def chroma_query_documents(
         query_texts=[query_text],
         n_results=n_results,
         where=where,
+        include=["documents", "metadatas", "distances"],
+    )
+
+    ids = result.get("ids", [[]])[0]
+    documents = result.get("documents", [[]])[0]
+    metadatas = result.get("metadatas", [[]])[0]
+    distances = result.get("distances", [[]])[0]
+
+    matches = []
+    for record_id, document, metadata, distance in zip(
+        ids,
+        documents,
+        metadatas,
+        distances,
+    ):
+        matches.append(
+            {
+                "id": record_id,
+                "document": document,
+                "metadata": metadata,
+                "distance": distance,
+            }
+        )
+
+    return matches
+
+
+@mcp.tool
+def chroma_get_slide_page(
+    lecture_number: int,
+    page_number: int,
+    n_results: int = 3,
+) -> list[dict[str, Any]]:
+    """Retrieve slide chunks for a specific lecture and slide/page number.
+
+    Args:
+        lecture_number: The lecture number extracted during slide ingestion.
+        page_number: The page number extracted from the slide PDF.
+        n_results: Maximum number of matching chunks to return.
+
+    Returns:
+        Matching slide chunks from the `slides` collection, including document
+        text, metadata, and distance score.
+
+    Use this when a student asks about a specific slide from a known lecture,
+    such as "slide 34 from week 5".
+    """
+    collection = client.get_collection(name="slides")
+    result = collection.query(
+        query_texts=[f"lecture {lecture_number} slide {page_number}"],
+        n_results=n_results,
+        where={
+            "$and": [
+                {"lecture_number": lecture_number},
+                {"page_number": page_number},
+            ]
+        },
         include=["documents", "metadatas", "distances"],
     )
 
