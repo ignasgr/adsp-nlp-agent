@@ -7,7 +7,6 @@ from datetime import datetime
 from agents.mcp import MCPServerStdio
 from fastmcp import FastMCP
 
-
 ATTENDANCE_DIR = os.getenv("ATTENDANCE_DATA_DIR", "/workspace/attendance")
 ATTENDANCE_DB_PATH = os.path.join(ATTENDANCE_DIR, "attendance.sqlite3")
 
@@ -57,7 +56,7 @@ def _validate_date(class_date: str) -> str:
 
 
 @mcp.tool
-def attendance_get_student_record(student_id: str) -> dict:
+def get_student_record(student_id: str) -> dict:
     """Return the student's current absence summary and request history.
 
     Use this before approving or discussing absences so the agent can explain
@@ -94,7 +93,7 @@ def attendance_get_student_record(student_id: str) -> dict:
 
 
 @mcp.tool
-def attendance_request_absence(
+def request_absence(
     student_id: str,
     class_date: str,
     student_name: str = "",

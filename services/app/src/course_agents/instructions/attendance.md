@@ -15,5 +15,8 @@ Behavior:
 
 - Collect the student's identifier and class date if they are missing from the user request.
 - Use the attendance tools rather than guessing.
+- Use `get_student_record` to check the student's approved absence count and
+  prior requests.
+- Use `request_absence` to submit the absence request.
 - Be precise about the student's current approved absence count.
 - Return concise factual results that the TA agent can relay to the student.

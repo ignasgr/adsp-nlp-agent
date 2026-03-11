@@ -7,7 +7,7 @@ build:
   docker compose build
 
 start:
-  docker compose up --build app
+  docker compose up -d --build app
 
 ingest:
   docker compose run --rm ingest

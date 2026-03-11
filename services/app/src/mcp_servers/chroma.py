@@ -6,7 +6,6 @@ import chromadb
 from agents.mcp import MCPServerStdio
 from fastmcp import FastMCP
 
-
 CHROMA_DATA_DIR = os.getenv("CHROMA_DATA_DIR", "/workspace/chroma")
 
 mcp = FastMCP("Local Chroma MCP")
@@ -44,7 +43,7 @@ def create_chroma_mcp_server() -> MCPServerStdio:
 
 
 @mcp.tool
-def chroma_list_collections() -> list[str]:
+def list_collections() -> list[str]:
     """Return the names of all collections in the local persistent Chroma store.
 
     This is useful when the agent needs to discover which knowledge bases are
@@ -55,7 +54,7 @@ def chroma_list_collections() -> list[str]:
 
 
 @mcp.tool
-def chroma_get_collection_count() -> int:
+def count_collections() -> int:
     """Return the total number of collections in the local Chroma store.
 
     This provides a lightweight way to confirm whether the database is empty or
@@ -65,7 +64,7 @@ def chroma_get_collection_count() -> int:
 
 
 @mcp.tool
-def chroma_get_collection_schema(
+def get_collection_schema(
     collection_name: str,
     sample_size: int = 5,
 ) -> dict[str, Any]:
@@ -98,7 +97,7 @@ def chroma_get_collection_schema(
 
 
 @mcp.tool
-def chroma_query_documents(
+def query_documents(
     collection_name: str,
     query_text: str,
     n_results: int = 5,
@@ -154,7 +153,7 @@ def chroma_query_documents(
 
 
 @mcp.tool
-def chroma_get_slide_page(
+def get_slide_page(
     lecture_number: int,
     page_number: int,
     n_results: int = 3,
