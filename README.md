@@ -20,9 +20,9 @@ There are two runtime services:
 The chat system is a small multi-agent architecture:
 
 - **TA Agent**: the only agent that speaks directly to the student
-- **Attendance Specialist**: handles absence requests and attendance records
-- **Lecture Specialist**: handles slide and syllabus questions through Chroma
-- **Notebook Specialist**: handles notebook and code questions through GitHub
+- **Attendance Agent**: handles absence requests and attendance records
+- **Lecture Agent**: handles slide and syllabus questions through Chroma
+- **Notebook Agent**: handles notebook and code questions through GitHub
 
 The current agent graph is available at [artifacts/agent_graph.png](/Users/ignasg/projects/adsp-nlp-agent/artifacts/agent_graph.png). You can regenerate it with `just visualize`.
 
@@ -33,7 +33,7 @@ The current agent graph is available at [artifacts/agent_graph.png](/Users/ignas
 The app lives under [services/app/src](/Users/ignasg/projects/adsp-nlp-agent/services/app/src).
 
 - [app.py](/Users/ignasg/projects/adsp-nlp-agent/services/app/src/app.py): Chainlit entrypoint, auth, session setup, and streaming responses
-- [course_agents/](/Users/ignasg/projects/adsp-nlp-agent/services/app/src/course_agents): TA agent plus specialist agents and their instructions
+- [course_agents/](/Users/ignasg/projects/adsp-nlp-agent/services/app/src/course_agents): TA agent plus delegated agents and their instructions
 - [mcp_servers/](/Users/ignasg/projects/adsp-nlp-agent/services/app/src/mcp_servers): active MCP integrations
 - [tools/](/Users/ignasg/projects/adsp-nlp-agent/services/app/src/tools): local `function_tool`s for authenticated user memory
 

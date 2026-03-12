@@ -8,7 +8,7 @@ def create_attendance_agent(model_name: str, attendance_tools) -> Agent:
         Path(__file__).with_name("instructions").joinpath("attendance.md").read_text()
     )
     return Agent(
-        name="Attendance Specialist",
+        name="Attendance Agent",
         instructions=instructions,
         model=model_name,
         tools=attendance_tools,
