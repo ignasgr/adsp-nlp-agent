@@ -1,102 +1,67 @@
-# ADSP NLP TA Agent
+# About
 
-This repository contains a local demo of a teaching-assistant chatbot for the University of Chicago course **ADSP-32018: Next-Gen NLP: Transformers, LLMs, and Agentic AI in Practice**.
+This project is a local-only teaching assistant demo for the University of Chicago course `ADSP-32018: Next-Gen NLP: Transformers, LLMs, and Agentic AI in Practice`.
 
-The system can help with:
+It provides a chat interface that combines course document retrieval, code reference lookup, and a small amount of authenticated user-specific storage.
 
-- lecture slides
-- the syllabus
-- lecture notebooks and code
-- student absence requests
-- saved response-style preferences
+## What the project does
 
-## High-Level Architecture
+The app supports a few main categories of student help:
 
-There are two runtime services:
+- answers questions about lecture slides
+- answers questions about the syllabus
+- explains lecture notebooks and course code
+- records and reviews student absence requests
+- stores a user's saved response-style preference
 
-- `app`: the Chainlit chat application and agent runtime
-- `ingest`: a batch job that rebuilds the Chroma collections from local course files
+All of this is exposed through a single Chainlit chat experience.
 
-The chat system is a small multi-agent architecture:
+## How it works
 
-- **TA Agent**: the only agent that speaks directly to the student
-- **Attendance Agent**: handles absence requests and attendance records
-- **Lecture Agent**: handles slide and syllabus questions through Chroma
-- **Notebook Agent**: handles notebook and code questions through GitHub
+The project runs locally with two main services:
 
-The current agent graph is available at [artifacts/agent_graph.png](/Users/ignasg/projects/adsp-nlp-agent/artifacts/agent_graph.png). You can regenerate it with `just visualize`.
+- `app`: the Chainlit application and agent runtime
+- `ingest`: a batch process that indexes local course documents into Chroma
 
-## Main Pieces
+At runtime, the chat experience is organized around a top-level `TA Agent` that can delegate to three narrower agents:
 
-### App
+- `Attendance Agent`
+- `Lecture Agent`
+- `Notebook Agent`
 
-The app lives under [services/app/src](/Users/ignasg/projects/adsp-nlp-agent/services/app/src).
+The `Lecture Agent` uses a local Chroma-backed MCP server to retrieve indexed slide and syllabus content.
 
-- [app.py](/Users/ignasg/projects/adsp-nlp-agent/services/app/src/app.py): Chainlit entrypoint, auth, session setup, and streaming responses
-- [course_agents/](/Users/ignasg/projects/adsp-nlp-agent/services/app/src/course_agents): TA agent plus delegated agents and their instructions
-- [mcp_servers/](/Users/ignasg/projects/adsp-nlp-agent/services/app/src/mcp_servers): active MCP integrations
-- [tools/](/Users/ignasg/projects/adsp-nlp-agent/services/app/src/tools): local `function_tool`s for authenticated user memory
+The `Notebook Agent` uses a GitHub MCP integration to read course code and notebook-related files.
 
-### Ingest
+The `Attendance Agent` uses local tools for absence history and absence submission.
 
-The ingestion job lives under [services/ingest/src](/Users/ignasg/projects/adsp-nlp-agent/services/ingest/src).
+The top-level `TA Agent` also has direct access to response-style preference tools so it can read or update a user's saved formatting preference.
 
-It loads course documents from [data/](/Users/ignasg/projects/adsp-nlp-agent/data) and writes them to the local Chroma store in [chroma_data/](/Users/ignasg/projects/adsp-nlp-agent/chroma_data).
+## Data and storage
 
-Current Chroma collections:
+Course materials are loaded from local folders:
 
-- `slides`
-- `syllabus`
+- `data/slides`
+- `data/syllabus`
 
-Each ingest run destroys and recreates the target collection.
+The ingest pipeline currently requires PDF files for indexed course materials.
 
-## Resources And Storage
+Indexed course content is stored in a local Chroma database under `chroma_data/`.
 
-### MCP resources
+User-specific state is stored locally in SQLite:
 
-The active MCP servers are:
+- attendance records under `attendance_data/`
+- response-style preferences under `preference_data/`
 
-- **GitHub MCP** for notebook and code access
-- **Chroma MCP** for lecture slide and syllabus retrieval
+## Important constraints
 
-### Local user memory
+- This is a local-only project intended to run on a developer machine.
+- Course materials are sourced from local files rather than a remote content system.
+- Slide and syllabus indexing currently depends on PDF inputs.
+- GitHub access is used for notebook and code reference tasks.
+- Authentication is controlled by `CHAINLIT_AUTH_USERS_JSON` in the local `.env` file.
 
-Some user-specific state is stored locally rather than through MCP:
+## Related docs
 
-- [attendance_data/](/Users/ignasg/projects/adsp-nlp-agent/attendance_data): SQLite attendance records
-- [preference_data/](/Users/ignasg/projects/adsp-nlp-agent/preference_data): SQLite response-style preferences
-
-The local tools in [tools/user_memory.py](/Users/ignasg/projects/adsp-nlp-agent/services/app/src/tools/user_memory.py) use authenticated user context, so identity comes from the app rather than from model guesses.
-
-## Getting Started
-
-### 1. Put course files in the expected data folders
-
-Place your source materials here:
-
-- slides PDFs in [data/slides](/Users/ignasg/projects/adsp-nlp-agent/data/slides)
-- syllabus files in [data/syllabus](/Users/ignasg/projects/adsp-nlp-agent/data/syllabus)
-
-### 2. Create your local environment file
-
-Use [.env.example](/Users/ignasg/projects/adsp-nlp-agent/.env.example) as the template for your local [.env](/Users/ignasg/projects/adsp-nlp-agent/.env).
-
-### 3. Build the services
-
-```bash
-just build
-```
-
-### 4. Ingest the course materials
-
-```bash
-just ingest
-```
-
-### 5. Start the app
-
-```bash
-just start
-```
-
-Then open `http://localhost:8000`.
+- Setup instructions: [startup.md](docs/startup.md)
+- Architecture diagram: [architecture.md](docs/architecture.md)
