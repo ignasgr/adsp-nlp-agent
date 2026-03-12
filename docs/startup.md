@@ -18,13 +18,16 @@ Required keys from `.env.example`:
 - `OPENAI_CHAT_MODEL`
 - `GITHUB_MCP_URL`
 - `GITHUB_PAT`
+- `GITHUB_REPO`
 - `CHAINLIT_AUTH_USERS_JSON`
 - `CHAINLIT_AUTH_SECRET`
 
 Authentication note:
 
 - `CHAINLIT_AUTH_USERS_JSON` defines the acceptable app logins. Each entry provides the username, password, and display name for a user who can sign in to the Chainlit app.
-- `GITHUB_PAT` allows the GitHub MCP integration to authenticate and read course code from GitHub. This requires the target course repository to already exist in GitHub and be accessible to that token.
+- `GITHUB_PAT` allows the GitHub MCP integration to authenticate and read course code from GitHub.
+- `GITHUB_REPO` defines the GitHub repository reference the notebook/code workflow should use, using the convention `owner/repo/tree/branch`.
+- This requires the target course repository to already exist in GitHub and be accessible to that token.
 
 ## 2. Add course materials
 
@@ -37,7 +40,9 @@ The ingest pipeline only scans for `*.pdf` files in those folders. PowerPoint fi
 
 Code reference note:
 
-- Notebook and code questions are answered through the GitHub MCP integration rather than from a local `data/` folder. Having said this, the relevant course repository must already exist in GitHub and be accessible through the `GITHUB_PAT` token in `.env`.
+- Notebook and code questions are answered through the GitHub MCP integration rather than from a local `data/` folder.
+- Set `GITHUB_REPO` in `.env` to the repository reference the notebook/code agent should use, for example `owner/repo/tree/main`.
+- The relevant course repository must already exist in GitHub and be accessible through the `GITHUB_PAT` token in `.env`.
 
 ## 3. Build the containers
 

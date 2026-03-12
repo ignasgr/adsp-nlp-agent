@@ -11,6 +11,7 @@ def create_ta_agent(
     model_name: str,
     github_mcp_server,
     chroma_mcp_server,
+    github_repo: str,
     attendance_tools,
     preference_tools,
 ) -> Agent:
@@ -20,7 +21,11 @@ def create_ta_agent(
 
     attendance_agent = create_attendance_agent(model_name, attendance_tools)
     lecture_agent = create_lecture_agent(model_name, chroma_mcp_server)
-    notebook_agent = create_notebook_agent(model_name, github_mcp_server)
+    notebook_agent = create_notebook_agent(
+        model_name,
+        github_mcp_server,
+        github_repo,
+    )
 
     return Agent(
         name="TA Agent",

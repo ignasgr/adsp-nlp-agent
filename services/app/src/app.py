@@ -22,6 +22,7 @@ from tools import (
 )
 
 MODEL_NAME = os.getenv("OPENAI_CHAT_MODEL")
+GITHUB_REPO = os.environ["GITHUB_REPO"]
 
 
 @dataclass
@@ -29,6 +30,7 @@ class AppContext:
     username: str
     name: str
     today: str
+    github_repo: str
 
 
 def _session_key_for_user(identifier: str) -> str:
@@ -114,6 +116,7 @@ async def start_chat() -> None:
         username=user_identifier,
         name=user_name,
         today=date.today().isoformat(),
+        github_repo=GITHUB_REPO,
     )
 
     # The agent gets the MCP server as a tool source. The conversation state is
@@ -122,6 +125,7 @@ async def start_chat() -> None:
         model_name=MODEL_NAME,
         github_mcp_server=github_mcp_server,
         chroma_mcp_server=chroma_mcp_server,
+        github_repo=GITHUB_REPO,
         attendance_tools=[get_student_record, request_absence],
         preference_tools=[get_response_style, update_response_style],
     )

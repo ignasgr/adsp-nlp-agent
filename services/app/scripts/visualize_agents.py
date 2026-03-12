@@ -4,7 +4,6 @@ from pathlib import Path
 
 from agents.extensions.visualization import draw_graph
 
-
 ROOT_DIR = Path(__file__).resolve().parents[1]
 SRC_DIR = ROOT_DIR / "src"
 if str(SRC_DIR) not in sys.path:
@@ -22,6 +21,7 @@ from tools import (  # noqa: E402
 
 def main() -> None:
     model_name = os.getenv("OPENAI_CHAT_MODEL", "gpt-4.1-mini")
+    github_repo = os.getenv("GITHUB_REPO", "octocat/Spoon-Knife/tree/main")
     output_dir = Path(os.getenv("ARTIFACTS_DIR", "/artifacts"))
     output_dir.mkdir(parents=True, exist_ok=True)
 
@@ -29,6 +29,7 @@ def main() -> None:
         model_name=model_name,
         github_mcp_server=create_github_mcp_server(),
         chroma_mcp_server=create_chroma_mcp_server(),
+        github_repo=github_repo,
         attendance_tools=[get_student_record, request_absence],
         preference_tools=[get_response_style, update_response_style],
     )
