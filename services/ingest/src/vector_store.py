@@ -13,7 +13,7 @@ class IngestVectorStore:
             path=settings.chroma_persist_directory,
         )
         self.settings = settings
-        self.embedder = SentenceTransformer(settings.embedding_model)
+        self.embedding_model = SentenceTransformer(settings.embedding_model)
 
     def _create_collection(self, collection_name: str):
         hnsw_cfg = {
@@ -33,7 +33,9 @@ class IngestVectorStore:
             configuration={"hnsw": hnsw_cfg},
         )
 
-    def ingest_documents(self, collection_name: str, documents: list[IngestDocument]) -> int:
+    def ingest_documents(
+        self, collection_name: str, documents: list[IngestDocument]
+    ) -> int:
         collection = self._create_collection(collection_name)
         if not documents:
             return 0
@@ -41,7 +43,9 @@ class IngestVectorStore:
         texts = [doc.text for doc in documents]
         ids = [doc.id for doc in documents]
         metadatas = [doc.metadata for doc in documents]
-        embeddings = self.embedder.encode(texts, normalize_embeddings=True).tolist()
+        embeddings = self.embedding_model.encode(
+            texts, normalize_embeddings=True
+        ).tolist()
 
         collection.add(
             ids=ids,

@@ -19,6 +19,7 @@ Required keys from `.env.example`:
 - `GITHUB_MCP_URL`
 - `GITHUB_PAT`
 - `GITHUB_REPO`
+- `EMBEDDING_MODEL`
 - `CHAINLIT_AUTH_USERS_JSON`
 - `CHAINLIT_AUTH_SECRET`
 
@@ -27,6 +28,7 @@ Authentication note:
 - `CHAINLIT_AUTH_USERS_JSON` defines the acceptable app logins. Each entry provides the username, password, and display name for a user who can sign in to the Chainlit app.
 - `GITHUB_PAT` allows the GitHub MCP integration to authenticate and read course code from GitHub.
 - `GITHUB_REPO` defines the GitHub repository reference the notebook/code workflow should use, using the convention `owner/repo/tree/branch`.
+- `EMBEDDING_MODEL` defines the sentence-transformer model used for both ingestion and Chroma query-time retrieval.
 - This requires the target course repository to already exist in GitHub and be accessible to that token.
 
 ## 2. Add course materials

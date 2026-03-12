@@ -5,11 +5,14 @@ from typing import Any
 import chromadb
 from agents.mcp import MCPServerStdio
 from fastmcp import FastMCP
+from sentence_transformers import SentenceTransformer
 
 CHROMA_DATA_DIR = os.getenv("CHROMA_DATA_DIR", "/workspace/chroma")
+EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL", "sentence-transformers/all-MiniLM-L6-v2")
 
 mcp = FastMCP("Local Chroma MCP")
 client = chromadb.PersistentClient(path=CHROMA_DATA_DIR)
+embedding_model = SentenceTransformer(EMBEDDING_MODEL)
 
 
 def _format_reference(metadata: dict[str, Any] | None) -> str:
@@ -120,8 +123,11 @@ def query_documents(
     needs relevant documents to answer a user question.
     """
     collection = client.get_collection(name=collection_name)
+    query_embedding = embedding_model.encode(
+        query_text, normalize_embeddings=True
+    ).tolist()
     result = collection.query(
-        query_texts=[query_text],
+        query_embeddings=[query_embedding],
         n_results=n_results,
         where=where,
         include=["documents", "metadatas", "distances"],
@@ -173,8 +179,12 @@ def get_slide_page(
     such as "slide 34 from week 5".
     """
     collection = client.get_collection(name="slides")
+    query_embedding = embedding_model.encode(
+        f"lecture {lecture_number} slide {page_number}",
+        normalize_embeddings=True,
+    ).tolist()
     result = collection.query(
-        query_texts=[f"lecture {lecture_number} slide {page_number}"],
+        query_embeddings=[query_embedding],
         n_results=n_results,
         where={
             "$and": [
