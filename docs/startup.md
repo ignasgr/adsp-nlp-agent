@@ -24,6 +24,7 @@ Required keys from `.env.example`:
 Authentication note:
 
 - `CHAINLIT_AUTH_USERS_JSON` defines the acceptable app logins. Each entry provides the username, password, and display name for a user who can sign in to the Chainlit app.
+- `GITHUB_PAT` allows the GitHub MCP integration to authenticate and read course code from GitHub. This requires the target course repository to already exist in GitHub and be accessible to that token.
 
 ## 2. Add course materials
 
@@ -33,6 +34,10 @@ Place your local course files here:
 - syllabus PDFs in `data/syllabus`
 
 The ingest pipeline only scans for `*.pdf` files in those folders. PowerPoint files such as `.ppt` or `.pptx` will not be indexed so convert non-PDF course materials to PDF before running ingestion.
+
+Code reference note:
+
+- Notebook and code questions are answered through the GitHub MCP integration rather than from a local `data/` folder. Having said this, the relevant course repository must already exist in GitHub and be accessible through the `GITHUB_PAT` token in `.env`.
 
 ## 3. Build the containers
 
