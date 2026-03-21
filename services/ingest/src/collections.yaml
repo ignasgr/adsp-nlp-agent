@@ -1,0 +1,10 @@
+collections:
+  - name: slides
+    source: data/slides
+    loader: pdf
+    chunker: by_page
+
+  - name: syllabus
+    source: data/syllabus
+    loader: pdf
+    chunker: by_section

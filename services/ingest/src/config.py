@@ -11,8 +11,6 @@ class Settings(BaseSettings):
         default="/workspace/chroma",
         alias="CHROMA_PERSIST_DIRECTORY",
     )
-    chroma_slides_collection: str = Field(default="slides", alias="CHROMA_SLIDES_COLLECTION")
-    chroma_syllabus_collection: str = Field(default="syllabus", alias="CHROMA_SYLLABUS_COLLECTION")
     chroma_hnsw_space: str = Field(default="cosine", alias="CHROMA_HNSW_SPACE")
     chroma_hnsw_m: int = Field(default=16, alias="CHROMA_HNSW_M")
     chroma_hnsw_construction_ef: int = Field(default=100, alias="CHROMA_HNSW_CONSTRUCTION_EF")
@@ -21,8 +19,10 @@ class Settings(BaseSettings):
         default="sentence-transformers/all-MiniLM-L6-v2", alias="EMBEDDING_MODEL"
     )
 
-    slides_dir: str = Field(default="/workspace/data/slides", alias="SLIDES_DIR")
-    syllabus_dir: str = Field(default="/workspace/data/syllabus", alias="SYLLABUS_DIR")
+    data_root: str = Field(default="/workspace", alias="DATA_ROOT")
+    collections_config: str = Field(
+        default="/workspace/src/collections.yaml", alias="COLLECTIONS_CONFIG"
+    )
 
 
 @lru_cache(maxsize=1)
