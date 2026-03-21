@@ -1,4 +1,13 @@
 services:
+  chroma_mcp:
+    build:
+      context: ./services/chroma_mcp
+    env_file:
+      - .env
+    volumes:
+      - ./chroma_data:/workspace/chroma
+      - ./services/chroma_mcp/src:/workspace/src
+
   app:
     build:
       context: ./services/app
@@ -6,6 +15,8 @@ services:
       - .env
     ports:
       - "8000:8000"
+    depends_on:
+      - chroma_mcp
     volumes:
       - ./.chainlit:/workspace/.chainlit
       - ./public:/workspace/public
