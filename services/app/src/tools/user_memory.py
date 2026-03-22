@@ -163,6 +163,7 @@ def request_absence(ctx: RunContextWrapper[Any], class_date: str) -> dict:
         "username": username,
         "student_name": student_name,
         "class_date": class_date,
+        "absence_count": absence_count + 1,
         "message": "Absence approved automatically.",
     }
 
