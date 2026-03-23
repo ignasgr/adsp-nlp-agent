@@ -4,7 +4,7 @@ import os
 import re
 from dataclasses import dataclass
 from datetime import date
-from functools import lru_cache
+from functools import cache
 
 import chainlit as cl
 from agents import Runner, SQLiteSession
@@ -38,7 +38,7 @@ def _session_key_for_user(identifier: str) -> str:
     return f"chainlit_{safe_identifier or 'user'}"
 
 
-@lru_cache(maxsize=1)
+@cache
 def _load_auth_users() -> dict[str, dict]:
     configured_users = json.loads(os.environ["CHAINLIT_AUTH_USERS_JSON"])
     return {user["username"]: user for user in configured_users}
@@ -175,7 +175,7 @@ async def on_message(message: cl.Message) -> None:
             event.data, ResponseTextDeltaEvent
         ):
             await msg.stream_token(event.data.delta)
-            await asyncio.sleep(0.05)
+            await asyncio.sleep(0.05)  # paces the typewriter effect in the UI
 
         # Tool calls are surfaced as Chainlit steps. We only show the tool
         # name and arguments to keep the trace compact and readable.
