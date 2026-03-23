@@ -80,7 +80,15 @@ def request_absence(ctx: RunContextWrapper[Any], class_date: str) -> dict:
     """Create an absence request for the authenticated student using the course auto-approval policy."""
     username = ctx.context.username
     student_name = ctx.context.name
-    class_date = _validate_date(class_date)
+    try:
+        class_date = _validate_date(class_date)
+    except ValueError:
+        return {
+            "username": username,
+            "student_name": student_name,
+            "class_date": class_date,
+            "message": f"Invalid date format '{class_date}'. Expected YYYY-MM-DD.",
+        }
 
     with closing(_get_connection()) as connection:
         existing = connection.execute(
