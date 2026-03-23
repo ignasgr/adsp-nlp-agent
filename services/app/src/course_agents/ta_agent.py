@@ -4,7 +4,7 @@ from agents import Agent
 
 from .attendance_agent import create_attendance_agent
 from .lecture_agent import create_lecture_agent
-from .notebook_agent import create_notebook_agent
+from .code_agent import create_code_agent
 
 
 def create_ta_agent(
@@ -21,7 +21,7 @@ def create_ta_agent(
 
     attendance_agent = create_attendance_agent(model_name, attendance_tools)
     lecture_agent = create_lecture_agent(model_name, chroma_mcp_server)
-    notebook_agent = create_notebook_agent(
+    code_agent = create_code_agent(
         model_name,
         github_mcp_server,
         github_repo,
@@ -50,8 +50,8 @@ def create_ta_agent(
                     "kind of explanation needed."
                 ),
             ),
-            notebook_agent.as_tool(
-                tool_name="notebook_agent",
+            code_agent.as_tool(
+                tool_name="code_agent",
                 tool_description=(
                     "Use for notebook and course code questions. "
                     "Pass a full task description including the user's goal, "
