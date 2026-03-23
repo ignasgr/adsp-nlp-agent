@@ -27,11 +27,11 @@ At runtime, the chat experience is organized around a top-level `TA Agent` that 
 
 - `Attendance Agent`
 - `Lecture Agent`
-- `Notebook Agent`
+- `Code Agent`
 
 The `Lecture Agent` uses a local Chroma-backed MCP server to retrieve indexed slide and syllabus content.
 
-The `Notebook Agent` uses a GitHub MCP integration to read course code and notebook-related files.
+The `Code Agent` uses a GitHub MCP integration to read course code and notebook-related files.
 
 The `Attendance Agent` uses local tools for absence history and absence submission.
 
