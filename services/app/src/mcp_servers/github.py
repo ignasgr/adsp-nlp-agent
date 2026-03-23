@@ -17,5 +17,5 @@ def create_github_mcp_server() -> MCPServerStreamableHttp:
             },
         },
         cache_tools_list=True,
-        tool_filter=ToolFilterStatic(allowed_tool_names=["get_file_contents", "list_branches",]),
+        tool_filter=ToolFilterStatic(allowed_tool_names=["get_file_contents", "list_branches"]),
     )

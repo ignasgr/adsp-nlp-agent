@@ -6,7 +6,6 @@ from typing import Any
 
 from agents import RunContextWrapper, function_tool
 
-
 ATTENDANCE_DIR = os.getenv("ATTENDANCE_DATA_DIR", "/workspace/attendance")
 ATTENDANCE_DB_PATH = os.path.join(ATTENDANCE_DIR, "attendance.sqlite3")
 
@@ -44,7 +43,7 @@ def _validate_date(class_date: str) -> str:
 
 @function_tool
 def get_student_record(ctx: RunContextWrapper[Any]) -> dict:
-    """Return the authenticated student's current absence summary and request history."""
+    """Return the authenticated student's current absence summary and request history."""  # noqa: E501
     username = ctx.context.username
 
     with closing(_get_connection()) as connection:
@@ -77,7 +76,8 @@ def get_student_record(ctx: RunContextWrapper[Any]) -> dict:
 
 @function_tool
 def request_absence(ctx: RunContextWrapper[Any], class_date: str) -> dict:
-    """Create an absence request for the authenticated student using the course auto-approval policy."""
+    """Create an absence request for the authenticated student
+    using the course auto-approval policy."""
     username = ctx.context.username
     student_name = ctx.context.name
     try:
@@ -107,7 +107,7 @@ def request_absence(ctx: RunContextWrapper[Any], class_date: str) -> dict:
                 "student_name": existing["student_name"],
                 "class_date": existing["class_date"],
                 "created_at": existing["created_at"],
-                "message": "An absence is already recorded for this student and class date.",
+                "message": ("An absence is already recorded for this student and class date."),
             }
 
         absence_count = connection.execute(

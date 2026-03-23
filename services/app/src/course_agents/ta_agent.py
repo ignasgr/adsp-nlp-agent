@@ -4,8 +4,8 @@ from agents import Agent, Tool
 from agents.mcp import MCPServerStreamableHttp
 
 from .attendance_agent import create_attendance_agent
-from .lecture_agent import create_lecture_agent
 from .code_agent import create_code_agent
+from .lecture_agent import create_lecture_agent
 
 
 def create_ta_agent(
@@ -16,9 +16,7 @@ def create_ta_agent(
     attendance_tools: list[Tool],
     preference_tools: list[Tool],
 ) -> Agent:
-    instructions = (
-        Path(__file__).with_name("instructions").joinpath("ta.md").read_text()
-    )
+    instructions = Path(__file__).with_name("instructions").joinpath("ta.md").read_text()
 
     attendance_agent = create_attendance_agent(model_name, attendance_tools)
     lecture_agent = create_lecture_agent(model_name, chroma_mcp_server)

@@ -6,7 +6,6 @@ from typing import Any
 
 from agents import RunContextWrapper, function_tool
 
-
 PREFERENCE_DIR = os.getenv("PREFERENCE_DATA_DIR", "/workspace/preferences")
 PREFERENCE_DB_PATH = os.path.join(PREFERENCE_DIR, "preferences.sqlite3")
 

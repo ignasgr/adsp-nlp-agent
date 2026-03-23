@@ -13,7 +13,10 @@ class Settings(BaseSettings):
     )
     chroma_hnsw_space: str = Field(default="cosine", alias="CHROMA_HNSW_SPACE")
     chroma_hnsw_m: int = Field(default=16, alias="CHROMA_HNSW_M")
-    chroma_hnsw_construction_ef: int = Field(default=100, alias="CHROMA_HNSW_CONSTRUCTION_EF")
+    chroma_hnsw_construction_ef: int = Field(
+        default=100,
+        alias="CHROMA_HNSW_CONSTRUCTION_EF",
+    )
     chroma_hnsw_search_ef: int = Field(default=100, alias="CHROMA_HNSW_SEARCH_EF")
     embedding_model: str = Field(
         default="sentence-transformers/all-MiniLM-L6-v2", alias="EMBEDDING_MODEL"

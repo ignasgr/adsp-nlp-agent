@@ -59,7 +59,9 @@ def main() -> None:
     if args.target != "all":
         specs = [s for s in specs if s.name == args.target]
         if not specs:
-            raise ValueError(f"No collection named {args.target!r} in {settings.collections_config}")
+            raise ValueError(
+                f"No collection named {args.target!r} in {settings.collections_config}"
+            )
 
     results = {}
     for spec in specs:
