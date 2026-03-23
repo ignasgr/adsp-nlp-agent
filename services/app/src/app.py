@@ -141,13 +141,15 @@ async def start_chat() -> None:
 
 @cl.on_chat_end
 async def end_chat() -> None:
-    # Clean up the MCP connection when the chat session ends.
+    # Clean up both MCP connections in parallel, ensuring both are attempted
+    # even if one raises.
     github_mcp_server = cl.user_session.get("github_mcp_server")
-    if github_mcp_server is not None:
-        await github_mcp_server.cleanup()
     chroma_mcp_server = cl.user_session.get("chroma_mcp_server")
-    if chroma_mcp_server is not None:
-        await chroma_mcp_server.cleanup()
+    await asyncio.gather(
+        github_mcp_server.cleanup() if github_mcp_server is not None else asyncio.sleep(0),
+        chroma_mcp_server.cleanup() if chroma_mcp_server is not None else asyncio.sleep(0),
+        return_exceptions=True,
+    )
 
 
 @cl.on_message
