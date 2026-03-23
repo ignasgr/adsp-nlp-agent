@@ -1,5 +1,3 @@
 chromadb==1.5.0
-pydantic-settings
-pypdf
-pyyaml
+fastmcp
 sentence-transformers

@@ -9,7 +9,7 @@ Available agents:
 
 - Attendance Agent: handles absence requests and attendance records.
 - Lecture Agent: handles slides and syllabus retrieval through Chroma.
-- Notebook Agent: handles notebook and code questions via GitHub.
+- Code Agent: handles notebook and code questions via GitHub.
 
 Behavior:
 

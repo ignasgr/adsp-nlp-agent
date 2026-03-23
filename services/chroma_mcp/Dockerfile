@@ -19,5 +19,6 @@ RUN python -c "from sentence_transformers import SentenceTransformer; SentenceTr
 
 COPY src /workspace/src
 
-ENTRYPOINT ["python", "-m", "src.main"]
-CMD ["--target", "all"]
+EXPOSE 8001
+
+ENTRYPOINT ["python", "src/server.py"]

@@ -18,7 +18,7 @@ flowchart TD
 
     A --> AS[Attendance Agent]
     A --> LS[Lecture Agent]
-    A --> NS[Notebook Agent]
+    A --> NS[Code Agent]
 
     AS --> T1[get_student_record]
     AS --> T2[request_absence]
@@ -46,4 +46,4 @@ flowchart TD
 - Response-style tools are attached directly to the `TA Agent`.
 - Attendance tools are attached to the `Attendance Agent`.
 - The `Lecture Agent` uses the Chroma MCP server.
-- The `Notebook Agent` uses the GitHub MCP server.
+- The `Code Agent` uses the GitHub MCP server.

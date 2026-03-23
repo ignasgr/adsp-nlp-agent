@@ -1,27 +1,26 @@
 from pathlib import Path
 
-from agents import Agent
+from agents import Agent, Tool
+from agents.mcp import MCPServerStreamableHttp
 
 from .attendance_agent import create_attendance_agent
+from .code_agent import create_code_agent
 from .lecture_agent import create_lecture_agent
-from .notebook_agent import create_notebook_agent
 
 
 def create_ta_agent(
     model_name: str,
-    github_mcp_server,
-    chroma_mcp_server,
+    github_mcp_server: MCPServerStreamableHttp,
+    chroma_mcp_server: MCPServerStreamableHttp,
     github_repo: str,
-    attendance_tools,
-    preference_tools,
+    attendance_tools: list[Tool],
+    preference_tools: list[Tool],
 ) -> Agent:
-    instructions = (
-        Path(__file__).with_name("instructions").joinpath("ta.md").read_text()
-    )
+    instructions = Path(__file__).with_name("instructions").joinpath("ta.md").read_text()
 
     attendance_agent = create_attendance_agent(model_name, attendance_tools)
     lecture_agent = create_lecture_agent(model_name, chroma_mcp_server)
-    notebook_agent = create_notebook_agent(
+    code_agent = create_code_agent(
         model_name,
         github_mcp_server,
         github_repo,
@@ -50,8 +49,8 @@ def create_ta_agent(
                     "kind of explanation needed."
                 ),
             ),
-            notebook_agent.as_tool(
-                tool_name="notebook_agent",
+            code_agent.as_tool(
+                tool_name="code_agent",
                 tool_description=(
                     "Use for notebook and course code questions. "
                     "Pass a full task description including the user's goal, "

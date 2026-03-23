@@ -4,7 +4,7 @@ import os
 import re
 from dataclasses import dataclass
 from datetime import date
-from functools import lru_cache
+from functools import cache
 
 import chainlit as cl
 from agents import Runner, SQLiteSession
@@ -38,7 +38,7 @@ def _session_key_for_user(identifier: str) -> str:
     return f"chainlit_{safe_identifier or 'user'}"
 
 
-@lru_cache(maxsize=1)
+@cache
 def _load_auth_users() -> dict[str, dict]:
     configured_users = json.loads(os.environ["CHAINLIT_AUTH_USERS_JSON"])
     return {user["username"]: user for user in configured_users}
@@ -96,9 +96,7 @@ async def set_starters():
 @cl.on_chat_start
 async def start_chat() -> None:
     current_user = cl.user_session.get("user")
-    user_identifier = (
-        current_user.identifier if current_user is not None else "anonymous"
-    )
+    user_identifier = current_user.identifier if current_user is not None else "anonymous"
     user_name = (
         current_user.metadata.get("name", user_identifier)
         if current_user is not None
@@ -132,22 +130,22 @@ async def start_chat() -> None:
 
     cl.user_session.set("agent", agent)
     cl.user_session.set("app_context", app_context)
-    cl.user_session.set(
-        "agent_session", SQLiteSession(_session_key_for_user(user_identifier))
-    )
+    cl.user_session.set("agent_session", SQLiteSession(_session_key_for_user(user_identifier)))
     cl.user_session.set("github_mcp_server", github_mcp_server)
     cl.user_session.set("chroma_mcp_server", chroma_mcp_server)
 
 
 @cl.on_chat_end
 async def end_chat() -> None:
-    # Clean up the MCP connection when the chat session ends.
+    # Clean up both MCP connections in parallel, ensuring both are attempted
+    # even if one raises.
     github_mcp_server = cl.user_session.get("github_mcp_server")
-    if github_mcp_server is not None:
-        await github_mcp_server.cleanup()
     chroma_mcp_server = cl.user_session.get("chroma_mcp_server")
-    if chroma_mcp_server is not None:
-        await chroma_mcp_server.cleanup()
+    await asyncio.gather(
+        github_mcp_server.cleanup() if github_mcp_server is not None else asyncio.sleep(0),  # noqa: E501
+        chroma_mcp_server.cleanup() if chroma_mcp_server is not None else asyncio.sleep(0),  # noqa: E501
+        return_exceptions=True,
+    )
 
 
 @cl.on_message
@@ -171,11 +169,9 @@ async def on_message(message: cl.Message) -> None:
 
     async for event in result.stream_events():
         # These are the raw text deltas from the model response.
-        if event.type == "raw_response_event" and isinstance(
-            event.data, ResponseTextDeltaEvent
-        ):
+        if event.type == "raw_response_event" and isinstance(event.data, ResponseTextDeltaEvent):
             await msg.stream_token(event.data.delta)
-            await asyncio.sleep(0.05)
+            await asyncio.sleep(0.05)  # paces the typewriter effect in the UI
 
         # Tool calls are surfaced as Chainlit steps. We only show the tool
         # name and arguments to keep the trace compact and readable.

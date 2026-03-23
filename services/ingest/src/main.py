@@ -2,61 +2,72 @@ from __future__ import annotations
 
 import argparse
 import json
+from dataclasses import dataclass
+from pathlib import Path
 
+import yaml
+
+from .chunkers import get_chunker
 from .config import get_settings
-from .loaders.slides import load_slide_documents
-from .loaders.syllabus import load_syllabus_documents
+from .loaders import get_loader
 from .vector_store import IngestVectorStore
 
 
-def ingest_slides(store: IngestVectorStore, settings) -> dict[str, int]:
-    documents = load_slide_documents(
-        slides_dir=settings.slides_dir,
-        collection_name=settings.chroma_slides_collection,
-    )
-    upserted = store.ingest_documents(settings.chroma_slides_collection, documents)
-    return {"loaded_chunks": len(documents), "upserted_points": upserted}
+@dataclass
+class CollectionSpec:
+    name: str
+    source: str
+    loader: str
+    chunker: str
 
 
-def ingest_syllabus(store: IngestVectorStore, settings) -> dict[str, int]:
-    documents = load_syllabus_documents(
-        syllabus_dir=settings.syllabus_dir,
-        collection_name=settings.chroma_syllabus_collection,
-    )
-    upserted = store.ingest_documents(settings.chroma_syllabus_collection, documents)
+def load_collection_specs(config_path: str, data_root: str) -> list[CollectionSpec]:
+    with open(config_path) as f:
+        raw = yaml.safe_load(f)
+
+    return [
+        CollectionSpec(
+            name=item["name"],
+            source=str(Path(data_root) / item["source"]),
+            loader=item["loader"],
+            chunker=item["chunker"],
+        )
+        for item in raw["collections"]
+    ]
+
+
+def ingest_collection(store: IngestVectorStore, spec: CollectionSpec) -> dict[str, int]:
+    pages = get_loader(spec.loader)(spec.source)
+    documents = get_chunker(spec.chunker)(pages, spec.name)
+    upserted = store.ingest_documents(spec.name, documents)
     return {"loaded_chunks": len(documents), "upserted_points": upserted}
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Batch ingestion job for slides/syllabus into Chroma.")
+    parser = argparse.ArgumentParser(description="Batch ingestion job.")
     parser.add_argument(
         "--target",
-        choices=["all", "slides", "syllabus"],
         default="all",
-        help="Select which collection to ingest.",
+        help="Collection name to ingest, or 'all'.",
     )
     args = parser.parse_args()
 
     settings = get_settings()
     store = IngestVectorStore(settings)
+    specs = load_collection_specs(settings.collections_config, settings.data_root)
 
-    if args.target == "slides":
-        result = {"slides": ingest_slides(store, settings)}
-    elif args.target == "syllabus":
-        result = {"syllabus": ingest_syllabus(store, settings)}
-    else:
-        slides = ingest_slides(store, settings)
-        syllabus = ingest_syllabus(store, settings)
-        result = {
-            "all": {
-                "slides_loaded_chunks": slides["loaded_chunks"],
-                "slides_upserted_points": slides["upserted_points"],
-                "syllabus_loaded_chunks": syllabus["loaded_chunks"],
-                "syllabus_upserted_points": syllabus["upserted_points"],
-            }
-        }
+    if args.target != "all":
+        specs = [s for s in specs if s.name == args.target]
+        if not specs:
+            raise ValueError(
+                f"No collection named {args.target!r} in {settings.collections_config}"
+            )
 
-    print(json.dumps(result, indent=2))
+    results = {}
+    for spec in specs:
+        results[spec.name] = ingest_collection(store, spec)
+
+    print(json.dumps(results, indent=2))
 
 
 if __name__ == "__main__":

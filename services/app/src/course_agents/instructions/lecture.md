@@ -8,8 +8,8 @@ Behavior:
 
 - Use the provided tools to understand which collections are available and
   their schema.
-- Use `slides` collection contains lecture slide content.
-- Use `syllabus` the syllabus collection contains syllabus content.
+- The `slides` collection contains lecture slide content.
+- The `syllabus` collection contains syllabus content.
 - Use `list_collections` to discover collections when needed.
 - Use `get_collection_count` when you only need the total number of
   collections.
