@@ -12,10 +12,27 @@ PREFERENCE_DB_PATH = os.path.join(PREFERENCE_DIR, "preferences.sqlite3")
 
 
 def _get_connection() -> sqlite3.Connection:
-    os.makedirs(PREFERENCE_DIR, exist_ok=True)
     connection = sqlite3.connect(PREFERENCE_DB_PATH)
     connection.row_factory = sqlite3.Row
     return connection
+
+
+def _init_db() -> None:
+    os.makedirs(PREFERENCE_DIR, exist_ok=True)
+    with closing(_get_connection()) as connection:
+        connection.execute(
+            """
+            CREATE TABLE IF NOT EXISTS user_preferences (
+                username TEXT PRIMARY KEY,
+                response_style TEXT,
+                updated_at TEXT NOT NULL
+            )
+            """
+        )
+        connection.commit()
+
+
+_init_db()
 
 
 @function_tool

@@ -12,10 +12,29 @@ ATTENDANCE_DB_PATH = os.path.join(ATTENDANCE_DIR, "attendance.sqlite3")
 
 
 def _get_connection() -> sqlite3.Connection:
-    os.makedirs(ATTENDANCE_DIR, exist_ok=True)
     connection = sqlite3.connect(ATTENDANCE_DB_PATH)
     connection.row_factory = sqlite3.Row
     return connection
+
+
+def _init_db() -> None:
+    os.makedirs(ATTENDANCE_DIR, exist_ok=True)
+    with closing(_get_connection()) as connection:
+        connection.execute(
+            """
+            CREATE TABLE IF NOT EXISTS absences (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                username TEXT NOT NULL,
+                student_name TEXT,
+                class_date TEXT NOT NULL,
+                created_at TEXT NOT NULL
+            )
+            """
+        )
+        connection.commit()
+
+
+_init_db()
 
 
 def _validate_date(class_date: str) -> str:
